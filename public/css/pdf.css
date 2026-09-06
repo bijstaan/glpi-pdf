@@ -1,0 +1,60 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 Bijstaan */
+/* GLPI PDF — the only styling this plugin needs in a browser.
+ *
+ * The plugin's real output is a file; nothing here affects it. This is the PDF
+ * tab's section picker, and the settings page.
+ */
+
+/* The colour input renders as a tiny swatch at default width in Tabler. */
+.glpipdf-config input[type="color"] {
+    width: 4rem;
+    height: 2.25rem;
+    padding: .125rem;
+}
+
+/* ------------------------------------------------------------- the tab */
+
+/* Two columns of checkboxes on anything wider than a phone: a ticket has
+   nineteen selectable sections, and one column of those is a scroll. */
+.glpipdf-parts {
+    columns: 2;
+    column-gap: 2rem;
+}
+
+@media (max-width: 700px) {
+    .glpipdf-parts {
+        columns: 1;
+    }
+}
+
+/* A group heading must not be orphaned at the foot of a column from the boxes
+   it labels. */
+.glpipdf-parts-group {
+    break-after: avoid;
+    break-inside: avoid;
+    margin: .75rem 0 .25rem;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .6;
+}
+
+.glpipdf-parts-group:first-child {
+    margin-top: 0;
+}
+
+.glpipdf-parts .form-check {
+    break-inside: avoid;
+}
+
+.glpipdf-parts-actions {
+    display: flex;
+    gap: .25rem;
+    margin-top: .75rem;
+}
+
+.glpipdf-tab summary {
+    cursor: pointer;
+}
