@@ -69,6 +69,11 @@ function plugin_init_glpipdf()
     // this one. POST_INIT fires once every plugin's hooks are in place.
     $PLUGIN_HOOKS[Hooks::POST_INIT]['glpipdf'] = [PdfTab::class, 'register'];
 
+    // Tools for glpi-ai. Registered unconditionally, like every other
+    // contributor in the suite: only glpi-ai reads this hook, so an instance
+    // without it pays one array assignment and never loads the class.
+    $PLUGIN_HOOKS['glpiai_tools']['glpipdf'] = [\GlpiPlugin\Glpipdf\AiTools::class, 'all'];
+
     $PLUGIN_HOOKS['add_css']['glpipdf']        = 'css/pdf.css';
     $PLUGIN_HOOKS['add_javascript']['glpipdf'] = 'js/pdf.js';
 
