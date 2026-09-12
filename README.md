@@ -1,16 +1,12 @@
 # GLPI PDF
 
-One branded PDF export for the whole suite — for GLPI 11.
+One branded PDF export for the whole suite, for GLPI 11. This plugin owns the
+*document*; other plugins own their *content* and contribute it through a hook.
 
-Every plugin here eventually grows something a person needs on paper: a
-procedure to sign, a change record for an auditor, a service review for a
-customer. Left to themselves each one grows its own answer — a print stylesheet
-in this plugin, an HTML archive in that one — and the estate ends up handing
-customers six documents that look like six products.
+Nothing on the output says GLPI — not the masthead, not the footer, not the
+file's metadata.
 
-So this plugin owns the *document*, and the other plugins own their *content*.
-
-## What it produces
+## Example
 
 A ticket, with its SOP checklist folded in as an appendix rather than arriving
 as a second file:
@@ -38,31 +34,28 @@ as a second file:
            not applicable to this item
 ```
 
-Nowhere on it does the word GLPI appear — not in the masthead, not in the
-footer, not in the file's own metadata.
+## What it can export
 
-## Why not the browser's print dialogue
+| Object | Document | Contributed by |
+|---|---|---|
+| Ticket / Change / Problem | Full record: fields, analysis and plans, actors, approvals, service levels, followups, tasks, solutions, linked assets, linked ITIL objects, attachments with checksums, knowledge articles, costs, contracts, project tasks, satisfaction, timings, field history | this plugin |
+| SOP | The authored procedure as a controlled document | `glpisop` |
+| Ticket / Change / Problem | *appendix:* SOP checklists run on it, with answers, skips and reasons | `glpisop` |
+| Change | *appendix:* risk assessment with the answers that scored it, window, outcome | `glpichange` |
+| Major incident | The incident record, including internal updates | `glpimajor` |
+| Major incident | Post-incident review, customer-facing updates only | `glpimajor` |
+| Business service | Service card: health, members, subscribers | `glpiservice` |
+| Report | An archived service review, re-rendered from what was archived | `glpireport` |
 
-That is what glpi-report did, and it was the right call when it was made: a PHP
-PDF library looked like a new dependency, and this monorepo deliberately has no
-`composer.json` anywhere.
+An appendix is what keeps a ticket and its procedure in one file. Without it an
+auditor gets a checklist with no context and a ticket that never mentions the
+procedure it was worked under.
 
-It turns out GLPI 11 already ships `tecnickcom/tcpdf` in its vendor tree and
-uses it for the search engine's list export. So a real PDF costs nothing new —
-and "print this and choose Save as PDF" is not an instruction to give somebody
-who has to send a customer a document every month.
+## Choosing sections
 
-Core's own PDF export is a different thing: `Glpi\Search\Output\Tcpdf` renders a
-*search result list* — the columns you chose, one row per ticket. That answers
-"what is in this queue". It cannot answer "what happened on this ticket", which
-is the question somebody has when they are asked to produce a record.
-
-## Choosing what goes in
-
-Every itemtype something can render grows a **PDF tab**, and it is the only way
-in for a single item — there is deliberately no export button on the form
-itself. A ticket offers nineteen sections — everything the record holds, including the ones another
-plugin contributed — and each is a checkbox:
+Every itemtype something can render grows a **PDF tab**, which is the only way
+in for a single item — there is no export button on the form. A ticket offers
+nineteen sections, each a checkbox:
 
 ```
   FULL RECORD
@@ -79,46 +72,21 @@ plugin contributed — and each is a checkbox:
   ☑ SOP checklists
 ```
 
-What is not ticked is left out entirely — not emptied, not marked absent — so
-an export is exactly as long as what it says.
+Unticked sections are omitted entirely rather than rendered empty. Two ship off:
+field history is `glpi_logs`, which is several hundred rows on an old ticket.
 
-Two ship **off**. The field history is `glpi_logs`: every field change, with who
-and when, which is the artefact that lets this plugin use the word *audit* — and
-also several hundred rows on an old ticket, which would make the ordinary export
-forty pages for the majority who did not come for one. It is one tick away.
-
-A bulk export from a search takes the defaults, because there is nobody to ask
+A bulk export from a search takes the defaults, since there is nobody to ask
 once fifty items are selected.
-
-## What it can export
-
-| Object | Document | From |
-|---|---|---|
-| Ticket / Change / Problem | Full record — fields, analysis and plans, actors, approvals, service levels, followups, tasks, solutions, linked assets, linked ITIL objects, attachments with checksums, knowledge articles, costs, contracts, project tasks, satisfaction, timings, and the full field history | this plugin |
-| SOP | The authored procedure, as a controlled document | glpi-sop |
-| Ticket / Change / Problem | *appendix:* the SOP checklists run on it, with answers, skips and reasons | glpi-sop |
-| Change | *appendix:* risk assessment with the answers that scored it, window, outcome | glpi-change |
-| Major incident | The incident record, including internal updates | glpi-major |
-| Major incident | The post-incident review — customer-facing updates only | glpi-major |
-| Business service | Service card — health, members, subscribers | glpi-service |
-| Report | An archived service review, re-rendered from what was archived | glpi-report |
-
-An **appendix** is the part that makes the suite hang together rather than
-merely coexist. Without it a ticket carrying an SOP run gives you two files: a
-checklist with no context, and a ticket that does not mention the procedure it
-was worked under. The person who needs both is the auditor, who now has to
-staple them together and be trusted to have picked the right pair.
 
 ## Adding your own
 
-A plugin registers one hook — the same shape glpi-sop already uses to offer its
-procedures to glpi-ai:
+One hook:
 
 ```php
 $PLUGIN_HOOKS['glpipdf_documents']['myplugin'] = [MyPdf::class, 'offers'];
 ```
 
-and describes what it has to say as **data**, never as markup:
+Describe what you have to say as data, never as markup:
 
 ```php
 public static function offers(): array
@@ -137,15 +105,15 @@ public static function offers(): array
             ->meter('Attainment', 92.3, '24 of 26 within target')
             ->note('Not yet approved', Doc::WARN),
 
-        // Optional. Keeps the document off the tab for items you have nothing
-        // for, instead of offering one that answers with an error.
+        // Optional: keeps the document off the tab for items you have nothing
+        // for, rather than offering one that answers with an error.
         'available' => static fn(CommonDBTM $item): bool => …,
     ]];
 }
 ```
 
-Sections a reader can tick are declared alongside the offer, and the builder is
-handed the ones they chose:
+Tickable sections are declared alongside the offer, and the builder is handed
+the ones chosen:
 
 ```php
 'parts' => [
@@ -155,116 +123,97 @@ handed the ones they chose:
 'build' => static fn(CommonDBTM $item, array $parts = []): ?Doc => …,
 ```
 
-An empty `$parts` is what a caller with no opinion passes — a plain link, a bulk
-action — and means everything.
+An empty `$parts` means everything; that is what a plain link or a bulk action
+passes.
 
-The blocks are `section`, `subsection`, `text`, `muted`, `kv`, `table`,
-`checklist`, `bullets`, `timeline`, `meter`, `note`, `spacer` and `pageBreak`.
-None of them is a layout primitive: there is no column, no box, no width. A
-contributor chooses what to say; the engine decides what it looks like, which is
-the only arrangement where changing the house style is one edit rather than
-eight.
+Blocks are `section`, `subsection`, `text`, `muted`, `kv`, `table`, `checklist`,
+`bullets`, `timeline`, `meter`, `note`, `spacer` and `pageBreak`. None is a
+layout primitive — no columns, no boxes, no widths. Contributors choose what to
+say; the engine decides how it looks, so changing the house style is one edit.
 
 Guard `offers()` with `class_exists(Doc::class)` and register the hook
-unconditionally — only this plugin reads it, so an instance without it pays one
-array assignment.
+unconditionally; only this plugin reads it.
 
-### Why not just hand over HTML
-
-Faster to write exactly once, and then: TCPDF supports a narrow, undocumented
-subset of CSS — no flex, no grid, no float, no classes — so every plugin would
-separately discover the same limits, and every plugin's document would drift
-into its own dialect of them.
-
-The engine *does* generate HTML internally, because that is how TCPDF flows text
-across a page break and splits a forty-row table over three pages with its
-header repeated on each. But the markup is generated in one place from data, and
-no contributor sees it.
+Contributors never produce HTML. TCPDF supports a narrow, undocumented subset of
+CSS — no flex, grid, float or classes — so every plugin would separately
+discover the same limits and drift into its own dialect of them. The engine does
+generate HTML internally, because that is how TCPDF flows text across page
+breaks and repeats a table header, but it does so in one place from data.
 
 ## Branding
 
-The name and logo come from **glpi-whitelabel**, read from that plugin rather
-than copied, so rebranding stays one page. Unconfigured, documents are produced
-neutral — no name, no logo, and never GLPI's.
+Name and logo are read from `glpiwhitelabel` rather than copied, so rebranding
+stays one page. Unconfigured, documents come out neutral: no name, no logo, and
+never GLPI's. Only the accent colour belongs to this plugin, since a palette
+that reads well as an application sidebar is not a rule colour on white A4.
 
 The logo is rasterised and downscaled once into a cache keyed on
-glpi-whitelabel's own `revision`, which it already bumps on every save. Two
-reasons, both measured rather than theoretical: TCPDF embeds the file it is
-given at its original pixel dimensions, and a four-page procedure came out at
-1.1 MB because this instance's logo is a 1.2 MB print original; and TCPDF cannot
-place an SVG through `Image()` at all, while glpi-whitelabel correctly accepts
-one.
-
-Only the accent colour belongs to this plugin. glpi-whitelabel has no such
-setting — it themes GLPI's chrome through a palette, and a palette that reads
-well as an application sidebar is not a rule colour on white A4.
+glpiwhitelabel's `revision`. TCPDF embeds an image at its original pixel
+dimensions — a four-page procedure came out at 1.1 MB from a 1.2 MB print
+original — and it cannot place an SVG through `Image()` at all.
 
 ## Fonts
 
-DejaVu Sans, not the default Helvetica, and this is a correctness decision
-rather than a typographic one. The PDF core fonts have no glyphs outside
-Latin-1, and TCPDF substitutes `?` silently — so a completed SOP run, whose
-whole notation is `✓` for done and `⊘` for skipped, exports as a column of
-question marks with nothing anywhere reporting an error.
+DejaVu Sans rather than the default Helvetica, for correctness rather than
+taste. The PDF core fonts have no glyphs outside Latin-1 and TCPDF substitutes
+`?` silently, so a completed SOP run — whose notation is `✓` for done and `⊘`
+for skipped — exports as a column of question marks with no error anywhere.
 
-Measured on this instance: helvetica rendered `? check ? skip ?`; dejavusans
-rendered `⌇ check ✓ skip ⊘`. The cost is about 45 KB per file, and is accepted.
+Measured: helvetica rendered `? check ? skip ?`; dejavusans rendered
+`⌇ check ✓ skip ⊘`. Costs about 45 KB per file.
 
 ## Permissions
 
-There is no `plugin_glpipdf_*` right, deliberately.
+There is no `plugin_glpipdf_*` right. A PDF of a ticket contains the ticket, so
+the check is `canViewItem()` on the item itself, re-derived from the database on
+every request. A right of its own would allow an instance where somebody can
+read a ticket on screen but not on paper, or the reverse — a plugin right that
+becomes a way to read every ticket through a URL with an id in it.
 
-A PDF of a ticket contains the ticket, so anyone who can read the record can
-read the export and nobody else: the check is `canViewItem()` on the item
-itself, re-derived from the database on every request. A right of its own would
-create the possibility of an instance where somebody can read a ticket on screen
-but not on paper — or, worse, the reverse, where a plugin right granted to a
-profile becomes a way to read every ticket in the estate through a URL with an
-id in it.
-
-Bulk export skips items the caller cannot read rather than refusing the whole
-job, and the document says how many were left out.
-
-## What it does not do
-
-- **No scheduling and no email.** glpi-report already owns that road, with a
-  queue and a send trail; a second one here would be a worse copy.
-- **Nothing is stored.** The file streams and is gone. Filing it as a GLPI
-  `Document` is a natural next step and is not built.
-- **No per-document layout options.** The point is that six plugins produce one
-  house style, and every knob is a way for that to stop being true.
+Bulk export skips items the caller cannot read rather than refusing the job, and
+the document says how many were left out.
 
 ## Install
 
-```
-docker exec glpi-glpi-1 php bin/console glpi:plugin:install --username=glpi glpipdf
-docker exec glpi-glpi-1 php bin/console glpi:plugin:activate glpipdf
+```bash
+# from the GLPI root
+git clone https://github.com/bijstaan/glpi-pdf.git plugins/glpipdf
+php bin/console plugin:install -u glpi glpipdf
+php bin/console plugin:activate glpipdf
 ```
 
-It creates no tables and no rights — only its settings rows, which uninstall
-removes. Settings are at **Setup → Plugins → GLPI PDF**, and that page lists
-every document currently registered, so "why is there no PDF tab on a change" is
-answered by looking rather than by reading code.
+No tables and no rights, only settings rows, which uninstall removes. Settings
+are at **Setup → Plugins → GLPI PDF**, and that page lists every registered
+document, so "why is there no PDF tab on a change" is answered by looking.
 
 ## Tests
 
-```
-sh tests/run.sh                 # pure: the document model. Runs in CI.
+```bash
+sh tests/run.sh                 # pure: the document model. Runs in CI
 php tests/class-load.php glpipdf glpisop glpichange glpimajor glpiservice glpireport
-node glpi-pdf/tests/browser/pdf-check.js
+node tests/browser/pdf-check.js
 ```
 
 `class-load.php` boots a GLPI kernel and loads every class, which is the only
-way to catch an inheritance-signature fatal — `php -l` parses a file, it does
-not link it. This plugin shipped one on its first run: a private `writeHtml()`
+way to catch an inheritance-signature fatal: `php -l` parses a file, it does not
+link it. This plugin shipped one on its first run — a private `writeHtml()`
 colliding with TCPDF's `writeHTML()`, which passed lint and answered every
 export with a 500.
 
-`pdf-check.js` covers the tab's presence and the bulk action; `pdf-tab-check.js`
-covers the section picker and the download.
+`pdf-check.js` covers the tab and the bulk action; `pdf-tab-check.js` covers the
+section picker and the download.
+
+## Limitations
+
+- No scheduling and no email; `glpireport` owns that, with a queue and a send
+  trail.
+- Nothing is stored. The file streams and is gone. Filing it as a GLPI
+  `Document` is not built.
+- No per-document layout options: the point is one house style
+  across six plugins.
 
 ## Licence
 
-GNU General Public License, version 3 or later — the same licence as GLPI.
-This plugin is loaded into GLPI's process and extends its classes, so it is a
-derivative work of GLPI and carries GLPI's licence. See [LICENSE](LICENSE).
+GPL-3.0-or-later, the same licence as GLPI. The plugin is loaded into GLPI's
+process and extends its classes, so it is a derivative work. See
+[LICENSE](LICENSE).
