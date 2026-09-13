@@ -8,9 +8,9 @@
  *
  * Every plugin in this suite eventually grows something a person needs on
  * paper: a procedure to sign, a change record for an auditor, a service review
- * for a customer. Left to themselves each one grows its own answer — a print
+ * for an entity. Left to themselves each one grows its own answer — a print
  * stylesheet here, an HTML archive there — and the estate ends up handing
- * customers six documents that look like six products.
+ * entities six documents that look like six products.
  *
  * So this plugin owns the document, and the other plugins own their content. A
  * contributor describes what it has to say as data ({@see Doc}); the engine

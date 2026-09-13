@@ -26,8 +26,8 @@ use GlpiPlugin\Glpiai\Tool;
  * must not do: a document attached to a ticket is visible to the requester,
  * and this plugin's own PDFs quote internal notes, assessments and technician
  * names. So the document is filed against the **entity**, which is where an
- * auditor looks for "what did we produce about this customer" and where a
- * self-service user cannot see it at all. A person who wants the customer to
+ * auditor looks for "what did we produce about this entity" and where a
+ * self-service user cannot see it at all. A person who wants the entity to
  * have it can attach it in one click, having read it first.
  *
  * That is also why nothing here emails anything. Rendering a PDF is
@@ -149,8 +149,8 @@ final class AiTools
             name: 'export_pdf',
             description: 'Produce a branded PDF of a ticket, change, problem, procedure or '
                 . 'report and file it in the document library, returning a link. Use it when '
-                . 'somebody needs a record on paper or as a file — for an auditor, a customer '
-                . 'meeting, a supplier, a signature. The file is filed against the customer '
+                . 'somebody needs a record on paper or as a file — for an auditor, an entity '
+                . 'meeting, a supplier, a signature. The file is filed against the entity '
                 . 'entity and is deliberately NOT attached to the record, because these '
                 . 'documents quote internal notes and the requester can see anything attached '
                 . 'to their ticket. Tell the person where it went and let them attach or send '
@@ -290,7 +290,7 @@ final class AiTools
             'filename'     => $filename,
             'link'         => sprintf('%s/front/document.send.php?docid=%d', self::root(), (int) $documents_id),
             'filed_under'  => \Dropdown::getDropdownName('glpi_entities', $entities_id),
-            'note'         => 'Filed in the document library against the customer entity, and '
+            'note'         => 'Filed in the document library against the entity, and '
                 . 'not attached to the record — these exports quote internal notes, and '
                 . 'attaching one to a ticket would show it to the requester. Say where it is '
                 . 'and let a person decide who gets it.',

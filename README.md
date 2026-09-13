@@ -43,7 +43,7 @@ as a second file:
 | Ticket / Change / Problem | *appendix:* SOP checklists run on it, with answers, skips and reasons | `glpisop` |
 | Change | *appendix:* risk assessment with the answers that scored it, window, outcome | `glpichange` |
 | Major incident | The incident record, including internal updates | `glpimajor` |
-| Major incident | Post-incident review, customer-facing updates only | `glpimajor` |
+| Major incident | Post-incident review, public updates only | `glpimajor` |
 | Business service | Service card: health, members, subscribers | `glpiservice` |
 | Report | An archived service review, re-rendered from what was archived | `glpireport` |
 

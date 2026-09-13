@@ -74,7 +74,7 @@ final class Engine extends TCPDF
         $this->brand = $brand;
 
         // Never GLPI, and never this plugin either. The metadata of a file that
-        // reaches a customer is part of what the file says.
+        // reaches an entity is part of what the file says.
         $this->SetCreator($brand->name);
         $this->SetAuthor($brand->name);
         $this->SetTitle(trim($doc->reference . ' ' . $doc->title));
@@ -135,7 +135,7 @@ final class Engine extends TCPDF
 
         if ($this->brand->logo !== '') {
             // Constrained by *height*, not width. A logo's aspect ratio is
-            // whatever the customer's designer chose, and sizing a square mark
+            // whatever the entity's designer chose, and sizing a square mark
             // to 16 mm wide makes it 16 mm tall — straight through the rule
             // below and into the first line of the page.
             $this->Image($this->brand->logo, self::MARGIN_X, $y - 1.5, 0, self::HEADER_LOGO_HEIGHT,

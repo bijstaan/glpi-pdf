@@ -10,7 +10,7 @@ namespace GlpiPlugin\Glpipdf;
  * Whose name is on the file.
  *
  * A PDF is the one thing this suite produces that leaves the estate, so "does
- * this say GLPI on it" has an answer and the answer is never yes. A customer
+ * this say GLPI on it" has an answer and the answer is never yes. An entity
  * has never heard of GLPI; a procedure or a service review arriving with a
  * stranger's product name at the top reads as somebody else's system that their
  * tickets happen to live in.

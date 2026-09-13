@@ -14,7 +14,7 @@ use CommonDBTM;
  * An audit-ready export and a readable one are not the same document. Everything
  * a ticket carries — the field history, every cost line, every linked asset,
  * the survey — is what somebody producing evidence needs and what somebody
- * emailing a customer a summary does not. Rather than choosing for them, a
+ * emailing an entity a summary does not. Rather than choosing for them, a
  * document is made of named *parts* and the reader ticks the ones they want.
  *
  * A part is declared by the contributor that knows what it means, alongside the

@@ -21,7 +21,7 @@ namespace GlpiPlugin\Glpipdf;
  * discover the same limits, and every plugin's document would drift into its
  * own dialect of them. A suite whose six exports look like six products is the
  * failure this plugin exists to prevent, given that the whole point is handing
- * a customer something with the MSP's name on it.
+ * someone a document with your own name on it.
  *
  * The blocks are deliberately few and none of them is a layout primitive.
  * There is no column, no box, no width. A contributor chooses what to say; the
@@ -30,7 +30,7 @@ namespace GlpiPlugin\Glpipdf;
  *
  * Everything here is plain text. Nothing is escaped on the way in and nothing
  * may contain markup — {@see Engine} escapes at the point it builds markup, so
- * a contributor that pre-escaped would produce visible `&amp;` in a customer's
+ * a contributor that pre-escaped would produce visible `&amp;` in an entity's
  * document.
  */
 final class Doc
@@ -327,7 +327,7 @@ final class Doc
      *
      * Built from the reference and the title rather than from an id, because
      * the file leaves the instance: `ticket-1164-printer-wont-clear.pdf` means
-     * something in a customer's mail client and `export-1164.pdf` does not.
+     * something in an entity's mail client and `export-1164.pdf` does not.
      */
     public function filename(): string
     {
