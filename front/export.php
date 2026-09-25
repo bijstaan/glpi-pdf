@@ -31,7 +31,7 @@ use GlpiPlugin\Glpipdf\Export;
 Session::checkLoginUser();
 
 if (!Export::permitted()) {
-    Html::displayRightError();
+    throw new \Glpi\Exception\Http\AccessDeniedHttpException();
 }
 
 // ------------------------------------------------------------------- bulk
@@ -40,17 +40,17 @@ if (!empty($_GET['bulk'])) {
     $selection = Bulk::take();
 
     if ($selection === null) {
-        Html::displayErrorAndDie(
-            __('There is nothing waiting to be exported. Make a selection and try again.', 'glpipdf')
-        );
+        $error = new \Glpi\Exception\Http\BadRequestHttpException();
+        $error->setMessageToDisplay(__('There is nothing waiting to be exported. Make a selection and try again.', 'glpipdf'));
+        throw $error;
     }
 
     $result = Export::many($selection['itemtype'], $selection['ids'], $selection['key']);
 
     if ($result === null) {
-        Html::displayErrorAndDie(
-            __('None of the selected items could be exported.', 'glpipdf')
-        );
+        $error = new \Glpi\Exception\Http\BadRequestHttpException();
+        $error->setMessageToDisplay(__('None of the selected items could be exported.', 'glpipdf'));
+        throw $error;
     }
 
     Export::stream($result['filename'], $result['bytes']);
@@ -82,11 +82,13 @@ if ($result === null) {
     // Registry::available().
     $item = Export::load($itemtype, $items_id);
 
-    Html::displayErrorAndDie(
+    $error = new \Glpi\Exception\Http\BadRequestHttpException();
+    $error->setMessageToDisplay(
         $item !== null && $key !== ''
             ? __('There is nothing to put in that document yet.', 'glpipdf')
             : __('That item cannot be exported.', 'glpipdf')
     );
+    throw $error;
 }
 
 Export::stream($result['filename'], $result['bytes']);

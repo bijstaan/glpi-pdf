@@ -37,7 +37,7 @@ use GlpiPlugin\Glpipdf\Itil;
 use GlpiPlugin\Glpipdf\PdfTab;
 
 define('PLUGIN_GLPIPDF_VERSION', '0.1.0');
-define('PLUGIN_GLPIPDF_MIN_GLPI', '11.0');
+define('PLUGIN_GLPIPDF_MIN_GLPI', '12.0');
 
 // Settings live under this config context.
 define('PLUGIN_GLPIPDF_CONFIG_CONTEXT', 'plugin:glpipdf');
